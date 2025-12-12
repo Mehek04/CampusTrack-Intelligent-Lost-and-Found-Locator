@@ -1,0 +1,670 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .header-actions {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        
+        .btn-download {
+            background: linear-gradient(135deg, #4CAF50, #45a049);
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 8px;
+            font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            text-decoration: none;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-download:hover {
+            background: linear-gradient(135deg, #45a049, #3d8b40);
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(76, 175, 80, 0.3);
+        }
+        
+        .pdf-icon {
+            color: #FF5722;
+        }
+        
+        .action-buttons {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+        
+        .user-type-badge {
+            display: inline-block;
+            padding: 3px 8px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+        
+        .type-student { background: #E3F2FD; color: #1565C0; }
+        .type-staff { background: #F3E5F5; color: #7B1FA2; }
+        .type-faculty { background: #E8F5E9; color: #2E7D32; }
+        .type-other { background: #FFF3E0; color: #EF6C00; }
+        
+        .dept-badge {
+            display: inline-block;
+            padding: 3px 8px;
+            border-radius: 4px;
+            font-size: 11px;
+            background: #f5f5f5;
+            color: #424242;
+        }
+        
+        .dashboard-grid .card {
+            text-align: center;
+            padding: 20px;
+        }
+        
+        .dashboard-grid .card h3 {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            font-size: 1rem;
+            margin-bottom: 15px;
+        }
+        
+        .dashboard-grid .card .stat-value {
+            font-size: 2.5rem;
+            font-weight: bold;
+            color: #2d3748;
+            margin-bottom: 5px;
+        }
+        
+        .dashboard-grid .card small {
+            color: #718096;
+            font-size: 0.85rem;
+        }
+        
+        .status-badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+        
+        .status-active, .status-pending { background: #fef3c7; color: #92400e; }
+        .status-approved, .status-claimed, .status-found { background: #d1fae5; color: #065f46; }
+        .status-rejected, .status-resolved { background: #fee2e2; color: #991b1b; }
+        .status-inactive { background: #fed7d7; color: #991b1b; }
+        
+        .badge {
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 600;
+            background: #f56565;
+            color: white;
+            margin-left: 5px;
+        }
+        
+        .section-nav {
+            position: sticky;
+            top: 0;
+            background: white;
+            padding: 15px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+            z-index: 100;
+        }
+        
+        .section-nav ul {
+            display: flex;
+            list-style: none;
+            padding: 0;
+            margin: 0;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+        
+        .section-nav a {
+            text-decoration: none;
+            padding: 8px 15px;
+            border-radius: 20px;
+            background: #f7fafc;
+            color: #4a5568;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+        
+        .section-nav a:hover {
+            background: #667eea;
+            color: white;
+        }
+        
+        .quick-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .stat-card {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            border-left: 4px solid #667eea;
+        }
+        
+        .stat-card h4 {
+            color: #4a5568;
+            margin-bottom: 10px;
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        
+        .stat-card .stat-value {
+            font-size: 2rem;
+            font-weight: bold;
+            color: #2d3748;
+            margin-bottom: 5px;
+        }
+        
+        .stat-card small {
+            color: #718096;
+            font-size: 0.85rem;
+        }
+        
+        .search-box {
+            margin-bottom: 20px;
+        }
+        
+        .search-box input {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid #e2e8f0;
+            border-radius: 8px;
+            font-size: 16px;
+        }
+    </style>
+</head>
+<body>
+    <div class="dashboard-container">
+        <div class="sidebar">
+            <h3>Admin Panel</h3>
+            <div class="user-info">
+                <p>Logged in as: <strong>{{ username }}</strong></p>
+                {% if pending_claims_count > 0 %}
+                <p style="color: #ff6b6b; font-size: 12px;">
+                    ⚠️ {{ pending_claims_count }} pending claim{% if pending_claims_count > 1 %}s{% endif %}
+                </p>
+                {% endif %}
+            </div>
+            <nav>
+                <a href="#" class="active">Dashboard</a>
+                <a href="#users">Manage Users</a>
+                <a href="#found">Found Items</a>
+                <a href="#lost">Lost Items</a>
+                <a href="#claims">Claims</a>
+                <a href="{{ url_for('admin_logout') }}" class="logout">Logout</a>
+            </nav>
+        </div>
+        
+        <div class="main-content">
+            <div class="header-actions">
+                <div>
+                    <h1>Admin Dashboard</h1>
+                    <p>Welcome to the administration panel</p>
+                </div>
+                <a href="{{ url_for('download_report') }}" class="btn-download">
+                    <i class="fas fa-file-pdf pdf-icon"></i>
+                    Download Full Report
+                </a>
+            </div>
+            
+            {% if pending_claims_count > 0 %}
+            <div class="alert alert-error">
+                ⚠️ You have {{ pending_claims_count }} pending claim{% if pending_claims_count > 1 %}s{% endif %} requiring review!
+                <a href="#claims" style="color: white; text-decoration: underline;">View Claims</a>
+            </div>
+            {% endif %}
+            
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    {% for category, message in messages %}
+                        <div class="alert alert-{{ category }}">{{ message }}</div>
+                    {% endfor %}
+                {% endif %}
+            {% endwith %}
+            
+            <!-- Quick Stats -->
+            <div class="quick-stats">
+                <div class="stat-card">
+                    <h4>Total Users</h4>
+                    <div class="stat-value">{{ users|length }}</div>
+                    <small>{{ users|selectattr('is_active')|list|length }} active</small>
+                </div>
+                
+                <div class="stat-card">
+                    <h4>Found Items</h4>
+                    <div class="stat-value">{{ found_items|length }}</div>
+                    <small>{{ found_items|selectattr('status', 'equalto', 'active')|list|length }} active</small>
+                </div>
+                
+                <div class="stat-card">
+                    <h4>Lost Items</h4>
+                    <div class="stat-value">{{ lost_items|length }}</div>
+                    <small>{{ lost_items|selectattr('status', 'equalto', 'active')|list|length }} active</small>
+                </div>
+                
+                <div class="stat-card">
+                    <h4>Total Claims</h4>
+                    <div class="stat-value">{{ claims|length }}</div>
+                    <small>{{ claims|selectattr('status', 'equalto', 'pending')|list|length }} pending</small>
+                </div>
+            </div>
+            
+            <!-- Section Navigation -->
+            <div class="section-nav">
+                <ul>
+                    <li><a href="#add-admin">Add Admin</a></li>
+                    <li><a href="#users">Users ({{ users|length }})</a></li>
+                    <li><a href="#found">Found Items ({{ found_items|length }})</a></li>
+                    <li><a href="#lost">Lost Items ({{ lost_items|length }})</a></li>
+                    <li><a href="#claims">Claims ({{ claims|length }})</a></li>
+                    <li><a href="#admins">Admins ({{ admins|length }})</a></li>
+                </ul>
+            </div>
+            
+            <!-- Add Admin Section -->
+            <div id="add-admin" class="dashboard-section">
+                <h2>Add New Admin</h2>
+                <form method="POST" action="{{ url_for('add_admin') }}" class="admin-form">
+                    <div class="form-row">
+                        <input type="text" name="new_username" placeholder="New Admin Username" required>
+                        <input type="password" name="new_password" placeholder="New Admin Password" required minlength="6">
+                        <button type="submit" class="btn btn-admin">Add Admin</button>
+                    </div>
+                </form>
+            </div>
+            
+            <!-- Users Section -->
+            <div id="users" class="dashboard-section">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                    <h2>Manage Users ({{ users|length }})</h2>
+                    <div class="search-box" style="width: 300px;">
+                        <input type="text" id="userSearch" placeholder="Search users..." onkeyup="searchTable('userSearch', 'usersTable')">
+                    </div>
+                </div>
+                <table class="data-table" id="usersTable">
+                    <thead>
+                        <tr>
+                            <th>Username</th>
+                            <th>Full Name</th>
+                            <th>Email</th>
+                            <th>Type</th>
+                            <th>Department</th>
+                            <th>Joined</th>
+                            <th>Status</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for user in users %}
+                        <tr>
+                            <td><strong>{{ user.username }}</strong></td>
+                            <td>{{ user.full_name or 'N/A' }}</td>
+                            <td>{{ user.email }}</td>
+                            <td>
+                                <span class="user-type-badge type-{{ user.user_type }}">
+                                    {{ user.user_type }}
+                                </span>
+                            </td>
+                            <td>
+                                {% if user.department %}
+                                <span class="dept-badge">{{ user.department|replace('_', ' ')|title }}</span>
+                                {% else %}N/A{% endif %}
+                            </td>
+                            <td>
+                                {% if user.created_at %}
+                                    {% if user.created_at is string %}
+                                        {{ user.created_at[:10] }}
+                                    {% else %}
+                                        {{ user.created_at.strftime('%Y-%m-%d') }}
+                                    {% endif %}
+                                {% else %}N/A{% endif %}
+                            </td>
+                            <td>
+                                <span class="status-badge {% if user.is_active %}active{% else %}inactive{% endif %}">
+                                    {{ 'Active' if user.is_active else 'Inactive' }}
+                                </span>
+                            </td>
+                            <td>
+                                <div class="action-buttons">
+                                    <a href="{{ url_for('admin_user_details', username=user.username) }}" 
+                                       class="btn btn-info btn-small">
+                                        <i class="fas fa-eye"></i> View
+                                    </a>
+                                    <a href="{{ url_for('toggle_user', username=user.username) }}" 
+                                       class="btn btn-small {% if user.is_active %}btn-error{% else %}btn-success{% endif %}">
+                                        {{ 'Deactivate' if user.is_active else 'Activate' }}
+                                    </a>
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            
+            <!-- Found Items Section -->
+            <div id="found" class="dashboard-section">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                    <h2>Found Items ({{ found_items|length }})</h2>
+                    <div class="search-box" style="width: 300px;">
+                        <input type="text" id="foundSearch" placeholder="Search found items..." onkeyup="searchTable('foundSearch', 'foundTable')">
+                    </div>
+                </div>
+                <table class="data-table" id="foundTable">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Device</th>
+                            <th>Posted By</th>
+                            <th>Location</th>
+                            <th>Status</th>
+                            <th>Date</th>
+                            <th>Claims</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for item in found_items %}
+                        <tr>
+                            <td>{{ item.id }}</td>
+                            <td>{{ item.device_name }}</td>
+                            <td>{{ item.posted_by }}</td>
+                            <td>{{ item.location }}</td>
+                            <td>
+                                <span class="status-badge status-{{ item.status }}">
+                                    {{ item.status|title }}
+                                </span>
+                            </td>
+                            <td>
+                                {% if item.posted_date %}
+                                    {% if item.posted_date is string %}
+                                        {{ item.posted_date[:10] }}
+                                    {% else %}
+                                        {{ item.posted_date.strftime('%Y-%m-%d') }}
+                                    {% endif %}
+                                {% else %}N/A{% endif %}
+                            </td>
+                            <td>
+                                {% if item.claims %}
+                                <span class="badge">{{ item.claims|length }}</span>
+                                {% else %}0{% endif %}
+                            </td>
+                            <td>
+                                <div class="action-buttons">
+                                    <a href="{{ url_for('admin_view_found_item', item_id=item.id) }}" 
+                                       class="btn btn-info btn-small">
+                                        <i class="fas fa-eye"></i> View
+                                    </a>
+                                    <a href="{{ url_for('delete_item', item_type='found', item_id=item.id) }}" 
+                                       class="btn btn-error btn-small"
+                                       onclick="return confirm('Are you sure you want to delete this item?');">
+                                        <i class="fas fa-trash"></i> Delete
+                                    </a>
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            
+            <!-- Lost Items Section -->
+            <div id="lost" class="dashboard-section">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                    <h2>Lost Items ({{ lost_items|length }})</h2>
+                    <div class="search-box" style="width: 300px;">
+                        <input type="text" id="lostSearch" placeholder="Search lost items..." onkeyup="searchTable('lostSearch', 'lostTable')">
+                    </div>
+                </div>
+                <table class="data-table" id="lostTable">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Device</th>
+                            <th>Posted By</th>
+                            <th>Location</th>
+                            <th>Status</th>
+                            <th>Date</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for item in lost_items %}
+                        <tr>
+                            <td>{{ item.id }}</td>
+                            <td>{{ item.device_name }}</td>
+                            <td>{{ item.posted_by }}</td>
+                            <td>{{ item.location }}</td>
+                            <td>
+                                <span class="status-badge status-{{ item.status }}">
+                                    {{ item.status|title }}
+                                </span>
+                            </td>
+                            <td>
+                                {% if item.lost_date %}
+                                    {% if item.lost_date is string %}
+                                        {{ item.lost_date[:10] }}
+                                    {% else %}
+                                        {{ item.lost_date.strftime('%Y-%m-%d') }}
+                                    {% endif %}
+                                {% elif item.posted_date %}
+                                    {% if item.posted_date is string %}
+                                        {{ item.posted_date[:10] }}
+                                    {% else %}
+                                        {{ item.posted_date.strftime('%Y-%m-%d') }}
+                                    {% endif %}
+                                {% else %}N/A{% endif %}
+                            </td>
+                            <td>
+                                <div class="action-buttons">
+                                    <a href="{{ url_for('admin_view_lost_item', item_id=item.id) }}" 
+                                       class="btn btn-info btn-small">
+                                        <i class="fas fa-eye"></i> View
+                                    </a>
+                                    <a href="{{ url_for('delete_item', item_type='lost', item_id=item.id) }}" 
+                                       class="btn btn-error btn-small"
+                                       onclick="return confirm('Are you sure you want to delete this item?');">
+                                        <i class="fas fa-trash"></i> Delete
+                                    </a>
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            
+            <!-- Claims Section -->
+            <div id="claims" class="dashboard-section">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                    <h2>Claims ({{ claims|length }}) {% if pending_claims_count > 0 %}<span class="badge">{{ pending_claims_count }} pending</span>{% endif %}</h2>
+                    <div class="search-box" style="width: 300px;">
+                        <input type="text" id="claimSearch" placeholder="Search claims..." onkeyup="searchTable('claimSearch', 'claimsTable')">
+                    </div>
+                </div>
+                <table class="data-table" id="claimsTable">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Claimant</th>
+                            <th>Owner</th>
+                            <th>Status</th>
+                            <th>Date</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for claim in claims %}
+                        <tr>
+                            <td>{{ claim.id }}</td>
+                            <td>{{ claim.claimant_username }}</td>
+                            <td>{{ claim.owner_username }}</td>
+                            <td>
+                                <span class="status-badge status-{{ claim.status }}">
+                                    {{ claim.status|title }}
+                                </span>
+                                {% if claim.status == 'pending' and not claim.get('admin_notified', False) %}
+                                <span class="badge" style="background: #f56565; color: white; font-size: 9px;">NEW</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if claim.claim_date %}
+                                    {% if claim.claim_date is string %}
+                                        {{ claim.claim_date[:10] }}
+                                    {% else %}
+                                        {{ claim.claim_date.strftime('%Y-%m-%d') }}
+                                    {% endif %}
+                                {% else %}N/A{% endif %}
+                            </td>
+                            <td>
+                                <div class="action-buttons">
+                                    <a href="{{ url_for('admin_view_claim', claim_id=claim.id) }}" 
+                                       class="btn btn-info btn-small">
+                                        <i class="fas fa-eye"></i> View
+                                    </a>
+                                    <a href="{{ url_for('delete_claim', claim_id=claim.id) }}" 
+                                       class="btn btn-error btn-small"
+                                       onclick="return confirm('Are you sure you want to delete this claim?');">
+                                        <i class="fas fa-trash"></i> Delete
+                                    </a>
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            
+            <!-- Admin List -->
+            <div id="admins" class="dashboard-section">
+                <h2>Administrators ({{ admins|length }})</h2>
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Username</th>
+                            <th>Created By</th>
+                            <th>Created At</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for admin in admins %}
+                        <tr>
+                            <td><strong>{{ admin.username }}</strong></td>
+                            <td>{{ admin.created_by }}</td>
+                            <td>
+                                {% if admin.created_at %}
+                                    {% if admin.created_at is string %}
+                                        {{ admin.created_at[:19] }}
+                                    {% else %}
+                                        {{ admin.created_at.strftime('%Y-%m-%d %H:%M:%S') }}
+                                    {% endif %}
+                                {% else %}N/A{% endif %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // Search function for tables
+        function searchTable(inputId, tableId) {
+            const input = document.getElementById(inputId);
+            const filter = input.value.toUpperCase();
+            const table = document.getElementById(tableId);
+            const tr = table.getElementsByTagName("tr");
+            
+            for (let i = 1; i < tr.length; i++) {
+                let display = false;
+                const td = tr[i].getElementsByTagName("td");
+                
+                for (let j = 0; j < td.length; j++) {
+                    const cell = td[j];
+                    if (cell) {
+                        const txtValue = cell.textContent || cell.innerText;
+                        if (txtValue.toUpperCase().indexOf(filter) > -1) {
+                            display = true;
+                            break;
+                        }
+                    }
+                }
+                
+                tr[i].style.display = display ? "" : "none";
+            }
+        }
+        
+        // Smooth scrolling for section navigation
+        document.querySelectorAll('.section-nav a').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                
+                const targetId = this.getAttribute('href');
+                if (targetId === '#add-admin') return;
+                
+                const targetElement = document.querySelector(targetId);
+                if (targetElement) {
+                    window.scrollTo({
+                        top: targetElement.offsetTop - 80,
+                        behavior: 'smooth'
+                    });
+                }
+            });
+        });
+        
+        // Highlight current section on scroll
+        window.addEventListener('scroll', function() {
+            const sections = document.querySelectorAll('.dashboard-section');
+            const navLinks = document.querySelectorAll('.section-nav a');
+            
+            let current = '';
+            
+            sections.forEach(section => {
+                const sectionTop = section.offsetTop;
+                const sectionHeight = section.clientHeight;
+                if (scrollY >= (sectionTop - 100)) {
+                    current = section.getAttribute('id');
+                }
+            });
+            
+            navLinks.forEach(link => {
+                link.classList.remove('active');
+                if (link.getAttribute('href') === `#${current}`) {
+                    link.classList.add('active');
+                }
+            });
+        });
+    </script>
+</body>
+</html>

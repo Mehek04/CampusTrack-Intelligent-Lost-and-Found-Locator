@@ -1,0 +1,444 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin - User Details</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .user-profile-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 40px;
+            border-radius: 15px;
+            margin-bottom: 30px;
+            text-align: center;
+        }
+        
+        .user-avatar {
+            width: 120px;
+            height: 120px;
+            background: white;
+            border-radius: 50%;
+            margin: 0 auto 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 3rem;
+            color: #667eea;
+            border: 5px solid white;
+        }
+        
+        .user-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .stat-card {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            border-left: 4px solid #667eea;
+        }
+        
+        .stat-card h4 {
+            color: #4a5568;
+            margin-bottom: 10px;
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        
+        .stat-value {
+            font-size: 2rem;
+            font-weight: bold;
+            color: #2d3748;
+        }
+        
+        .detail-section {
+            background: white;
+            padding: 25px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        .detail-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+        }
+        
+        .detail-item {
+            margin-bottom: 15px;
+        }
+        
+        .detail-label {
+            font-weight: 600;
+            color: #4a5568;
+            margin-bottom: 5px;
+            display: block;
+            font-size: 0.9rem;
+        }
+        
+        .detail-value {
+            color: #2d3748;
+            padding: 10px 15px;
+            background: #f7fafc;
+            border-radius: 6px;
+            border-left: 4px solid #667eea;
+        }
+        
+        .user-items-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+        
+        .item-card-small {
+            background: white;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            border: 1px solid #e2e8f0;
+            transition: transform 0.3s ease;
+        }
+        
+        .item-card-small:hover {
+            transform: translateY(-5px);
+        }
+        
+        .item-image-small {
+            height: 150px;
+            overflow: hidden;
+        }
+        
+        .item-image-small img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        
+        .item-details-small {
+            padding: 15px;
+        }
+        
+        .status-badge {
+            display: inline-block;
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 11px;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+        
+        .status-active { background: #c6f6d5; color: #22543d; }
+        .status-claimed { background: #bee3f8; color: #2c5282; }
+        .status-resolved { background: #e9d8fd; color: #553c9a; }
+        .status-found { background: #fef3c7; color: #92400e; }
+        .status-inactive { background: #fed7d7; color: #991b1b; }
+        
+        .back-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 20px;
+            background: #4a5568;
+            color: white;
+            text-decoration: none;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            transition: all 0.3s ease;
+        }
+        
+        .back-btn:hover {
+            background: #2d3748;
+            transform: translateY(-2px);
+        }
+        
+        .user-type-badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+        
+        .type-student { background: #E3F2FD; color: #1565C0; }
+        .type-staff { background: #F3E5F5; color: #7B1FA2; }
+        .type-faculty { background: #E8F5E9; color: #2E7D32; }
+        .type-other { background: #FFF3E0; color: #EF6C00; }
+        
+        .dept-badge {
+            display: inline-block;
+            padding: 4px 10px;
+            border-radius: 4px;
+            background: #f5f5f5;
+            color: #424242;
+            font-size: 12px;
+        }
+    </style>
+</head>
+<body>
+    <div class="dashboard-container">
+        <div class="sidebar">
+            <h3>Admin Panel</h3>
+            <div class="user-info">
+                <p>Logged in as: <strong>{{ session.admin_username }}</strong></p>
+            </div>
+            <nav>
+                <a href="{{ url_for('admin_dashboard') }}">Dashboard</a>
+                <a href="{{ url_for('admin_dashboard') }}#users">Manage Users</a>
+                <a href="{{ url_for('admin_dashboard') }}#found">Found Items</a>
+                <a href="{{ url_for('admin_dashboard') }}#lost">Lost Items</a>
+                <a href="{{ url_for('admin_dashboard') }}#claims">Claims</a>
+                <a href="{{ url_for('admin_logout') }}" class="logout">Logout</a>
+            </nav>
+        </div>
+        
+        <div class="main-content">
+            <a href="{{ url_for('admin_dashboard') }}#users" class="back-btn">
+                <i class="fas fa-arrow-left"></i> Back to Users List
+            </a>
+            
+            <div class="user-profile-header">
+                <div class="user-avatar">
+                    <i class="fas fa-user"></i>
+                </div>
+                <h1>{{ user.full_name or user.username }}</h1>
+                <p>{{ user.email }} • {{ user.phone or 'No phone' }}</p>
+                <span class="user-type-badge type-{{ user.user_type }}">
+                    {{ user.user_type|title }}
+                </span>
+                <span class="status-badge {% if user.is_active %}status-active{% else %}status-inactive{% endif %}" style="margin-left: 10px;">
+                    {{ 'Active' if user.is_active else 'Inactive' }}
+                </span>
+            </div>
+            
+            <div class="user-stats">
+                <div class="stat-card">
+                    <h4>Total Items Posted</h4>
+                    <div class="stat-value">{{ user.total_items_posted }}</div>
+                </div>
+                <div class="stat-card">
+                    <h4>Found Items</h4>
+                    <div class="stat-value">{{ user.items_found }}</div>
+                </div>
+                <div class="stat-card">
+                    <h4>Lost Items</h4>
+                    <div class="stat-value">{{ user.items_lost }}</div>
+                </div>
+                <div class="stat-card">
+                    <h4>Claims Made</h4>
+                    <div class="stat-value">{{ user.claims_made }}</div>
+                </div>
+                <div class="stat-card">
+                    <h4>Claims Received</h4>
+                    <div class="stat-value">{{ user.claims_received }}</div>
+                </div>
+            </div>
+            
+            <div class="detail-grid">
+                <div class="detail-section">
+                    <h3>Personal Information</h3>
+                    <div class="detail-item">
+                        <span class="detail-label">Username:</span>
+                        <div class="detail-value">{{ user.username }}</div>
+                    </div>
+                    <div class="detail-item">
+                        <span class="detail-label">Full Name:</span>
+                        <div class="detail-value">{{ user.full_name or 'Not provided' }}</div>
+                    </div>
+                    <div class="detail-item">
+                        <span class="detail-label">Student/Staff ID:</span>
+                        <div class="detail-value">{{ user.student_id or 'Not provided' }}</div>
+                    </div>
+                    <div class="detail-item">
+                        <span class="detail-label">User Type:</span>
+                        <div class="detail-value">
+                            <span class="user-type-badge type-{{ user.user_type }}">
+                                {{ user.user_type|title }}
+                            </span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="detail-section">
+                    <h3>Academic Information</h3>
+                    <div class="detail-item">
+                        <span class="detail-label">Department:</span>
+                        <div class="detail-value">
+                            {% if user.department %}
+                            <span class="dept-badge">{{ user.department|replace('_', ' ')|title }}</span>
+                            {% else %}Not provided{% endif %}
+                        </div>
+                    </div>
+                    <div class="detail-item">
+                        <span class="detail-label">Year/Semester:</span>
+                        <div class="detail-value">
+                            {% if user.year == 'staff' %}Staff Member
+                            {% elif user.year == 'faculty' %}Faculty
+                            {% elif user.year %}Year {{ user.year }}
+                            {% else %}Not provided{% endif %}
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="detail-section">
+                    <h3>Account Information</h3>
+                    <div class="detail-item">
+                        <span class="detail-label">Email Address:</span>
+                        <div class="detail-value">{{ user.email }}</div>
+                    </div>
+                    <div class="detail-item">
+                        <span class="detail-label">Phone Number:</span>
+                        <div class="detail-value">{{ user.phone or 'Not provided' }}</div>
+                    </div>
+                    <div class="detail-item">
+    <span class="detail-label">Account Created:</span>
+    <div class="detail-value">
+        {% if user.created_at %}
+            {% if user.created_at is string %}
+                {{ user.created_at }}
+            {% else %}
+                {{ user.created_at.strftime('%Y-%m-%d %H:%M:%S') }}
+            {% endif %}
+        {% else %}N/A{% endif %}
+    </div>
+</div>
+<div class="detail-item">
+    <span class="detail-label">Last Login:</span>
+    <div class="detail-value">
+        {% if user.last_login %}
+            {% if user.last_login is string %}
+                {{ user.last_login }}
+            {% else %}
+                {{ user.last_login.strftime('%Y-%m-%d %H:%M:%S') }}
+            {% endif %}
+        {% else %}Never logged in{% endif %}
+    </div>
+</div>
+                    <div class="detail-item">
+                        <span class="detail-label">Account Status:</span>
+                        <div class="detail-value">
+                            <span class="status-badge {% if user.is_active %}status-active{% else %}status-inactive{% endif %}">
+                                {{ 'Active' if user.is_active else 'Inactive' }}
+                            </span>
+                            <a href="{{ url_for('toggle_user', username=user.username) }}" 
+                               class="btn btn-small {% if user.is_active %}btn-error{% else %}btn-success{% endif %}" 
+                               style="margin-left: 10px; padding: 4px 10px;">
+                                {{ 'Deactivate' if user.is_active else 'Activate' }}
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- User's Found Items -->
+            {% if user_found_items %}
+            <div class="detail-section">
+                <h3>Found Items Posted by User ({{ user_found_items|length }})</h3>
+                <div class="user-items-grid">
+                    {% for item in user_found_items %}
+                    <div class="item-card-small">
+                        {% if item.image %}
+                        <div class="item-image-small">
+                            <img src="{{ url_for('static', filename='uploads/' + item.image) }}" alt="{{ item.device_name }}">
+                        </div>
+                        {% else %}
+                        <div class="item-image-small" style="background: #f7fafc; display: flex; align-items: center; justify-content: center;">
+                            <i class="fas fa-image" style="font-size: 2rem; color: #cbd5e0;"></i>
+                        </div>
+                        {% endif %}
+                        <div class="item-details-small">
+                            <h4>{{ item.device_name }}</h4>
+                            <p><small><i class="fas fa-map-marker-alt"></i> {{ item.location }}</small></p>
+                            <p><small><i class="fas fa-calendar"></i> 
+    {% if item.posted_date %}
+        {% if item.posted_date is string %}
+            {{ item.posted_date[:10] }}
+        {% else %}
+            {{ item.posted_date.strftime('%Y-%m-%d') }}
+        {% endif %}
+    {% else %}N/A{% endif %}
+</small></p>
+                            <span class="status-badge status-{{ item.status }}">
+                                {{ item.status|title }}
+                            </span>
+                            <p style="margin-top: 8px; font-size: 12px; color: #718096;">
+                                {{ item.description|truncate(60) }}
+                            </p>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+            
+            <!-- User's Lost Items -->
+            {% if user_lost_items %}
+            <div class="detail-section">
+                <h3>Lost Items Posted by User ({{ user_lost_items|length }})</h3>
+                <div class="user-items-grid">
+                    {% for item in user_lost_items %}
+                    <div class="item-card-small">
+                        {% if item.image %}
+                        <div class="item-image-small">
+                            <img src="{{ url_for('static', filename='uploads/' + item.image) }}" alt="{{ item.device_name }}">
+                        </div>
+                        {% else %}
+                        <div class="item-image-small" style="background: #f7fafc; display: flex; align-items: center; justify-content: center;">
+                            <i class="fas fa-image" style="font-size: 2rem; color: #cbd5e0;"></i>
+                        </div>
+                        {% endif %}
+                        <div class="item-details-small">
+                            <h4>{{ item.device_name }}</h4>
+                            <p><small><i class="fas fa-map-marker-alt"></i> {{ item.location }}</small></p>
+                            <p><small><i class="fas fa-calendar"></i> 
+    {% if item.lost_date %}
+        {% if item.lost_date is string %}
+            {{ item.lost_date[:10] }}
+        {% else %}
+            {{ item.lost_date.strftime('%Y-%m-%d') }}
+        {% endif %}
+    {% elif item.posted_date %}
+        {% if item.posted_date is string %}
+            {{ item.posted_date[:10] }}
+        {% else %}
+            {{ item.posted_date.strftime('%Y-%m-%d') }}
+        {% endif %}
+    {% else %}N/A{% endif %}
+</small></p>
+                            <span class="status-badge status-{{ item.status }}">
+                                {{ item.status|title }}
+                            </span>
+                            <p style="margin-top: 8px; font-size: 12px; color: #718096;">
+                                {{ item.description|truncate(60) }}
+                            </p>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+            
+            {% if not user_found_items and not user_lost_items %}
+            <div class="detail-section">
+                <h3>User Activity</h3>
+                <div style="text-align: center; padding: 40px; color: #718096;">
+                    <i class="fas fa-inbox" style="font-size: 3rem; margin-bottom: 15px;"></i>
+                    <p>This user hasn't posted any items yet.</p>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</body>
+</html>

@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin - Message User</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .back-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 20px;
+            background: #4a5568;
+            color: white;
+            text-decoration: none;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            transition: all 0.3s ease;
+        }
+        
+        .back-btn:hover {
+            background: #2d3748;
+            transform: translateY(-2px);
+        }
+        
+        .form-control {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid #e2e8f0;
+            border-radius: 8px;
+            font-size: 16px;
+            margin-top: 5px;
+        }
+        
+        textarea.form-control {
+            font-family: inherit;
+            resize: vertical;
+        }
+        
+        .auth-card {
+            max-width: 600px;
+            margin: 0 auto;
+        }
+    </style>
+</head>
+<body>
+    <div class="dashboard-container">
+        <div class="sidebar">
+            <h3>Admin Panel</h3>
+            <div class="user-info">
+                <p>Logged in as: <strong>{{ session.admin_username }}</strong></p>
+            </div>
+            <nav>
+                <a href="{{ url_for('admin_dashboard') }}">Dashboard</a>
+                <a href="#users">Manage Users</a>
+                <a href="#found">Found Items</a>
+                <a href="#lost">Lost Items</a>
+                <a href="#claims">Claims</a>
+                <a href="{{ url_for('admin_logout') }}" class="logout">Logout</a>
+            </nav>
+        </div>
+        
+        <div class="main-content">
+            <a href="{{ request.referrer or url_for('admin_dashboard') }}" class="back-btn">
+                <i class="fas fa-arrow-left"></i> Back
+            </a>
+            
+            <div class="auth-card">
+                <h2>Message User</h2>
+                <p>Send a message to: <strong>{{ recipient }}</strong></p>
+                
+                {% with messages = get_flashed_messages(with_categories=true) %}
+                    {% if messages %}
+                        {% for category, message in messages %}
+                            <div class="alert alert-{{ category }}">{{ message }}</div>
+                        {% endfor %}
+                    {% endif %}
+                {% endwith %}
+                
+                <form method="POST" action="{{ url_for('admin_message_user') }}">
+                    <input type="hidden" name="recipient" value="{{ recipient }}">
+                    
+                    {% if item_id %}
+                    <input type="hidden" name="item_id" value="{{ item_id }}">
+                    {% endif %}
+                    
+                    {% if item_type %}
+                    <input type="hidden" name="item_type" value="{{ item_type }}">
+                    {% endif %}
+                    
+                    <div class="form-group">
+                        <label for="subject">Subject (Optional):</label>
+                        <input type="text" id="subject" name="subject" 
+                               placeholder="Message subject" class="form-control">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="message">Message:</label>
+                        <textarea id="message" name="message" rows="8" 
+                                  placeholder="Type your message here..." required
+                                  class="form-control"></textarea>
+                    </div>
+                    
+                    <div class="form-actions" style="margin-top: 20px;">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-paper-plane"></i> Send Message
+                        </button>
+                        <a href="{{ request.referrer or url_for('admin_dashboard') }}" 
+                           class="btn btn-secondary">Cancel</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

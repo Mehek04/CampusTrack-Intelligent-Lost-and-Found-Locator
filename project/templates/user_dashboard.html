@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>User Dashboard</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <div class="dashboard-container">
+        <div class="sidebar">
+            <h3>User Panel</h3>
+            <div class="user-info">
+                <p>Welcome, <strong>{{ username }}</strong></p>
+                {% if unread_messages > 0 %}
+                <p style="color: #ff6b6b; font-size: 12px;">
+                    📬 {{ unread_messages }} unread message{% if unread_messages > 1 %}s{% endif %}
+                </p>
+                {% endif %}
+            </div>
+            <nav>
+                <a href="{{ url_for('user_dashboard') }}" class="active">Dashboard</a>
+                <a href="{{ url_for('chat_messages') }}">Messages {% if unread_messages > 0 %}<span class="badge">{{ unread_messages }}</span>{% endif %}</a>
+                <a href="{{ url_for('add_found_item') }}">Add Found Item</a>
+                <a href="{{ url_for('add_lost_item') }}">Add Lost Item</a>
+                <a href="{{ url_for('view_items') }}">View Items</a>
+                <a href="{{ url_for('user_logout') }}" class="logout">Logout</a>
+            </nav>
+        </div>
+        
+        <div class="main-content">
+            <header>
+                <h1>User Dashboard</h1>
+                <p>Manage your found/lost items and claims</p>
+            </header>
+            
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    {% for category, message in messages %}
+                        <div class="alert alert-{{ category }}">{{ message }}</div>
+                    {% endfor %}
+                {% endif %}
+            {% endwith %}
+            
+            <div class="dashboard-grid">
+                <!-- My Found Items -->
+                <div class="card">
+                    <h3>My Found Items</h3>
+                    {% if user_found_items %}
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Device</th>
+                                <th>Location</th>
+                                <th>Status</th>
+                                <th>Claims</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for item in user_found_items %}
+                            <tr>
+                                <td>{{ item.device_name }}</td>
+                                <td>{{ item.location }}</td>
+                                <td>
+                                    <span class="status-badge status-{{ item.status }}">
+                                        {{ item.status|title }}
+                                    </span>
+                                </td>
+                                <td>{{ item.claims|length if item.claims else 0 }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                    {% else %}
+                    <p>No found items posted yet.</p>
+                    {% endif %}
+                    <div style="margin-top: 15px;">
+                        <a href="{{ url_for('add_found_item') }}" class="btn btn-primary">Add New Found Item</a>
+                    </div>
+                </div>
+                
+                <!-- My Lost Items -->
+                <div class="card">
+                    <h3>My Lost Items</h3>
+                    {% if user_lost_items %}
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Device</th>
+                                <th>Location</th>
+                                <th>Status</th>
+                                <th>Date</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for item in user_lost_items %}
+                            <tr>
+                                <td>{{ item.device_name }}</td>
+                                <td>{{ item.location }}</td>
+                                <td>
+                                    <span class="status-badge status-{{ item.status }}">
+                                        {{ item.status|title }}
+                                    </span>
+                                </td>
+                                <td>
+    {% if item.lost_date %}
+        {% if item.lost_date is string %}
+            {{ item.lost_date[:10] }}
+        {% else %}
+            {{ item.lost_date.strftime('%Y-%m-%d') }}
+        {% endif %}
+    {% elif item.posted_date %}
+        {% if item.posted_date is string %}
+            {{ item.posted_date[:10] }}
+        {% else %}
+            {{ item.posted_date.strftime('%Y-%m-%d') }}
+        {% endif %}
+    {% else %}N/A{% endif %}
+</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                    {% else %}
+                    <p>No lost items posted yet.</p>
+                    {% endif %}
+                    <div style="margin-top: 15px;">
+                        <a href="{{ url_for('add_lost_item') }}" class="btn btn-primary">Add New Lost Item</a>
+                    </div>
+                </div>
+                
+                <!-- Claim Requests -->
+                {% if user_claims %}
+                <div class="card">
+                    <h3>Claim Requests on My Items</h3>
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Claimant</th>
+                                <th>Device</th>
+                                <th>Status</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for claim in user_claims %}
+                            <tr>
+                                <td>{{ claim.claimant_username }}</td>
+                                <td>
+                                    {# Find device name from user's found items #}
+                                    {% set device_name = '' %}
+                                    {% for found_item in user_found_items %}
+                                        {% if found_item.id == claim.found_item_id %}
+                                            {% set device_name = found_item.device_name %}
+                                        {% endif %}
+                                    {% endfor %}
+                                    {{ device_name if device_name else 'N/A' }}
+                                </td>
+                                <td>
+                                    <span class="status-badge status-{{ claim.status }}">
+                                        {{ claim.status|title }}
+                                    </span>
+                                </td>
+                                <td>
+                                    <div class="action-buttons">
+                                        <!-- View Details Button -->
+                                        <a href="{{ url_for('view_claim', claim_id=claim.id) }}" 
+                                           class="btn btn-info btn-small">
+                                            📋 View Details
+                                        </a>
+                                        
+                                        <!-- Approve/Reject Buttons (only for pending claims) -->
+                                        {% if claim.status == 'pending' %}
+                                        <a href="{{ url_for('manage_claim', claim_id=claim.id, action='approve') }}" 
+                                           class="btn btn-success btn-small">
+                                            ✅ Approve
+                                        </a>
+                                        <a href="{{ url_for('manage_claim', claim_id=claim.id, action='reject') }}" 
+                                           class="btn btn-error btn-small">
+                                            ❌ Reject
+                                        </a>
+                                        {% endif %}
+                                    </div>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</body>
+</html>

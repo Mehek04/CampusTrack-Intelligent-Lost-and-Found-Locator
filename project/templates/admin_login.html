@@ -1,0 +1,417 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Login | Campus Lost & Found</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary-blue: #1565C0;
+            --light-blue: #E3F2FD;
+            --dark-blue: #0D47A1;
+            --accent-gold: #FFD700;
+            --light-gray: #f5f5f5;
+            --medium-gray: #e0e0e0;
+            --dark-gray: #424242;
+            --text-dark: #212121;
+            --text-light: #757575;
+            --white: #ffffff;
+            --shadow-light: rgba(0, 0, 0, 0.1);
+            --shadow-medium: rgba(0, 0, 0, 0.15);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background: linear-gradient(135deg, #f0f4f8 0%, #d9e2ec 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .admin-login-container {
+            width: 100%;
+            max-width: 420px;
+            animation: fadeIn 0.5s ease-out;
+        }
+
+        .admin-login-header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .admin-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            background: var(--primary-blue);
+            color: var(--white);
+            padding: 10px 20px;
+            border-radius: 50px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 12px rgba(21, 101, 192, 0.2);
+        }
+
+        .admin-badge i {
+            color: var(--accent-gold);
+        }
+
+        .admin-login-header h1 {
+            color: var(--text-dark);
+            font-size: 2rem;
+            margin-bottom: 8px;
+            font-weight: 600;
+        }
+
+        .admin-login-header p {
+            color: var(--text-light);
+            font-size: 0.95rem;
+            line-height: 1.5;
+        }
+
+        .admin-login-card {
+            background: var(--white);
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 10px 30px var(--shadow-light);
+            border: 1px solid var(--medium-gray);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .admin-login-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, var(--primary-blue), var(--accent-gold));
+        }
+
+        .back-home {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            color: var(--text-light);
+            text-decoration: none;
+            font-size: 0.9rem;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            transition: color 0.3s ease;
+        }
+
+        .back-home:hover {
+            color: var(--primary-blue);
+        }
+
+        .security-badge {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            padding: 12px;
+            background: var(--light-blue);
+            border-radius: 10px;
+            margin-bottom: 25px;
+            color: var(--primary-blue);
+            font-weight: 500;
+        }
+
+        .security-badge i {
+            font-size: 1.2rem;
+        }
+
+        .form-group {
+            margin-bottom: 25px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: var(--text-dark);
+            font-weight: 500;
+            font-size: 0.95rem;
+        }
+
+        .input-with-icon {
+            position: relative;
+        }
+
+        .input-with-icon i {
+            position: absolute;
+            left: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-light);
+            font-size: 1.1rem;
+        }
+
+        .input-with-icon input {
+            width: 100%;
+            padding: 14px 15px 14px 45px;
+            border: 2px solid var(--medium-gray);
+            border-radius: 10px;
+            font-size: 1rem;
+            color: var(--text-dark);
+            transition: all 0.3s ease;
+            background: var(--white);
+        }
+
+        .input-with-icon input:focus {
+            outline: none;
+            border-color: var(--primary-blue);
+            box-shadow: 0 0 0 3px rgba(21, 101, 192, 0.1);
+        }
+
+        .input-with-icon input::placeholder {
+            color: var(--text-light);
+        }
+
+        .admin-credentials {
+            background: var(--light-gray);
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 25px;
+            border-left: 4px solid var(--primary-blue);
+        }
+
+        .admin-credentials h4 {
+            color: var(--text-dark);
+            margin-bottom: 10px;
+            font-size: 0.95rem;
+        }
+
+        .credentials-list {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            font-size: 0.9rem;
+            color: var(--text-light);
+        }
+
+        .credential-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .credential-label {
+            font-weight: 500;
+        }
+
+        .credential-value {
+            font-family: 'Courier New', monospace;
+            background: var(--white);
+            padding: 4px 8px;
+            border-radius: 4px;
+            border: 1px solid var(--medium-gray);
+            font-size: 0.85rem;
+        }
+
+        .admin-login-btn {
+            width: 100%;
+            padding: 15px;
+            background: var(--primary-blue);
+            color: var(--white);
+            border: none;
+            border-radius: 10px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .admin-login-btn:hover {
+            background: var(--dark-blue);
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(21, 101, 192, 0.3);
+        }
+
+        .admin-login-btn:active {
+            transform: translateY(0);
+        }
+
+        .admin-login-btn i {
+            font-size: 1.2rem;
+        }
+
+        .flash-messages {
+            margin-bottom: 20px;
+        }
+
+        .alert {
+            padding: 12px 15px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            font-size: 0.95rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            animation: slideIn 0.3s ease-out;
+        }
+
+        .alert-success {
+            background: #E8F5E9;
+            color: #1B5E20;
+            border: 1px solid #C8E6C9;
+        }
+
+        .alert-error {
+            background: #FFEBEE;
+            color: #C62828;
+            border: 1px solid #FFCDD2;
+        }
+
+        .alert i {
+            font-size: 1.1rem;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateX(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        /* Responsive Design */
+        @media (max-width: 480px) {
+            .admin-login-card {
+                padding: 30px 25px;
+            }
+            
+            .admin-login-header h1 {
+                font-size: 1.8rem;
+            }
+            
+            .back-home {
+                position: relative;
+                top: 0;
+                left: 0;
+                margin-bottom: 15px;
+            }
+            
+            .credentials-list {
+                flex-direction: column;
+                gap: 10px;
+            }
+            
+            .credential-item {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 5px;
+            }
+        }
+
+        @media (max-width: 768px) {
+            body {
+                padding: 15px;
+            }
+            
+            .admin-login-container {
+                max-width: 400px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="admin-login-container">
+        <div class="admin-login-header">
+            <div class="admin-badge">
+                <i class="fas fa-user-shield"></i>
+                <span>Administrator Access</span>
+            </div>
+            <h1>Admin Portal</h1>
+            <p>Secure access to campus lost & found administration</p>
+        </div>
+        
+        <div class="admin-login-card">
+            <a href="{{ url_for('index') }}" class="back-home">
+                <i class="fas fa-arrow-left"></i>
+                Back to Home
+            </a>
+            
+            <div class="security-badge">
+                <i class="fas fa-shield-alt"></i>
+                <span>Restricted Access - Authorized Personnel Only</span>
+            </div>
+            
+            <div class="flash-messages">
+                {% with messages = get_flashed_messages(with_categories=true) %}
+                    {% if messages %}
+                        {% for category, message in messages %}
+                            <div class="alert alert-{{ category }}">
+                                {% if category == 'success' %}
+                                    <i class="fas fa-check-circle"></i>
+                                {% else %}
+                                    <i class="fas fa-exclamation-circle"></i>
+                                {% endif %}
+                                {{ message }}
+                            </div>
+                        {% endfor %}
+                    {% endif %}
+                {% endwith %}
+            </div>
+            
+            
+            
+            <form method="POST" action="{{ url_for('admin_login') }}">
+                <div class="form-group">
+                    <label for="username">Administrator Username</label>
+                    <div class="input-with-icon">
+                        <i class="fas fa-user-shield"></i>
+                        <input type="text" id="username" name="username" 
+                               placeholder="Enter admin username" 
+                               value="admin" required>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="password">Administrator Password</label>
+                    <div class="input-with-icon">
+                        <i class="fas fa-key"></i>
+                        <input type="password" id="password" name="password" 
+                               placeholder="Enter admin password" 
+                               value="admin@123" required>
+                    </div>
+                </div>
+                
+                <button type="submit" class="admin-login-btn">
+                    <i class="fas fa-sign-in-alt"></i>
+                    Access Admin Panel
+                </button>
+            </form>
+        </div>
+    </div>
+</body>
+</html>

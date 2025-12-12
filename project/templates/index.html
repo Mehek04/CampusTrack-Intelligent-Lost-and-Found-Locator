@@ -1,0 +1,613 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Campus Lost & Found</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --campus-green: #2E7D32;
+            --campus-gold: #FFD700;
+            --campus-blue: #1565C0;
+            --campus-cream: #FFF8E1;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(rgba(0, 0, 0, 0.6), rgba(0, 0, 0, 0.7)), 
+                        url('https://images.unsplash.com/photo-1562774053-701939374585?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1920&q=80');
+            background-size: cover;
+            background-position: center;
+            background-attachment: fixed;
+            min-height: 100vh;
+            color: white;
+            overflow-x: hidden;
+            position: relative;
+        }
+
+        /* Animated campus elements */
+        .campus-element {
+            position: absolute;
+            opacity: 0.1;
+            z-index: -1;
+        }
+
+        .gate {
+            top: 15%;
+            left: 8%;
+            font-size: 4rem;
+            animation: float 8s ease-in-out infinite;
+            color: var(--campus-gold);
+        }
+
+        .building {
+            top: 25%;
+            right: 8%;
+            font-size: 5rem;
+            animation: float 10s ease-in-out infinite 1s;
+            color: var(--campus-blue);
+        }
+
+        .tree {
+            bottom: 20%;
+            left: 10%;
+            font-size: 4rem;
+            animation: float 7s ease-in-out infinite 0.5s;
+            color: var(--campus-green);
+        }
+
+        .bell {
+            bottom: 30%;
+            right: 10%;
+            font-size: 3rem;
+            animation: float 6s ease-in-out infinite 1.5s;
+            color: #9C27B0;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0) rotate(0deg); }
+            50% { transform: translateY(-20px) rotate(5deg); }
+        }
+
+        /* Admin login button */
+        .admin-btn-container {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            z-index: 1000;
+        }
+
+        .admin-btn {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: white;
+            padding: 8px 15px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            text-decoration: none;
+        }
+
+        .admin-btn:hover {
+            background: rgba(255, 215, 0, 0.2);
+            border-color: var(--campus-gold);
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(255, 215, 0, 0.3);
+        }
+
+        /* Main container */
+        .main-container {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 40px 20px;
+            position: relative;
+        }
+
+        /* Header */
+        .header {
+            text-align: center;
+            margin-bottom: 60px;
+            animation: fadeInDown 1s ease-out;
+        }
+
+        .campus-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            background: rgba(255, 215, 0, 0.1);
+            border: 1px solid rgba(255, 215, 0, 0.3);
+            padding: 10px 20px;
+            border-radius: 50px;
+            margin-bottom: 20px;
+            backdrop-filter: blur(5px);
+        }
+
+        .campus-badge i {
+            color: var(--campus-gold);
+        }
+
+        .header h1 {
+            font-size: 3.5rem;
+            margin-bottom: 15px;
+            background: linear-gradient(45deg, var(--campus-gold), #ffffff);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            text-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+            font-weight: 700;
+            letter-spacing: 1px;
+        }
+
+        .header p {
+            font-size: 1.2rem;
+            color: rgba(255, 255, 255, 0.9);
+            max-width: 600px;
+            margin: 0 auto;
+            line-height: 1.6;
+        }
+
+        .tagline {
+            font-size: 1.1rem;
+            color: var(--campus-gold);
+            font-style: italic;
+            margin-top: 10px;
+        }
+
+        /* Cards container */
+        .cards-container {
+            display: flex;
+            justify-content: center;
+            gap: 40px;
+            flex-wrap: wrap;
+            max-width: 1200px;
+            animation: fadeInUp 1s ease-out 0.3s both;
+        }
+
+        .card {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(15px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 20px;
+            padding: 40px;
+            width: 350px;
+            text-align: center;
+            transition: all 0.4s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, var(--campus-green), var(--campus-gold));
+        }
+
+        .card:hover {
+            transform: translateY(-10px) scale(1.02);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+            border-color: rgba(255, 255, 255, 0.3);
+        }
+
+        .user-card {
+            border-top-color: var(--campus-green);
+        }
+
+        .admin-card {
+            border-top-color: var(--campus-blue);
+            opacity: 0.9;
+        }
+
+        .card-icon {
+            font-size: 3.5rem;
+            margin-bottom: 20px;
+            height: 80px;
+            width: 80px;
+            line-height: 80px;
+            border-radius: 50%;
+            margin: 0 auto 25px;
+            background: rgba(255, 255, 255, 0.1);
+            border: 2px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .user-card .card-icon {
+            color: var(--campus-green);
+            border-color: rgba(46, 125, 50, 0.3);
+            background: rgba(46, 125, 50, 0.1);
+        }
+
+        .admin-card .card-icon {
+            color: var(--campus-blue);
+            border-color: rgba(21, 101, 192, 0.3);
+            background: rgba(21, 101, 192, 0.1);
+        }
+
+        .card h2 {
+            font-size: 1.8rem;
+            margin-bottom: 15px;
+            color: white;
+        }
+
+        .card p {
+            color: rgba(255, 255, 255, 0.8);
+            margin-bottom: 30px;
+            line-height: 1.6;
+        }
+
+        .buttons {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+        }
+
+        .btn {
+            padding: 12px 25px;
+            border-radius: 30px;
+            font-weight: 600;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-block;
+            border: 2px solid transparent;
+            text-align: center;
+            min-width: 120px;
+        }
+
+        .btn-primary {
+            background: var(--campus-green);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: transparent;
+            border-color: var(--campus-green);
+            transform: translateY(-3px);
+            box-shadow: 0 10px 20px rgba(46, 125, 50, 0.3);
+        }
+
+        .btn-secondary {
+            background: transparent;
+            border-color: rgba(255, 255, 255, 0.3);
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background: rgba(255, 255, 255, 0.1);
+            border-color: white;
+            transform: translateY(-3px);
+        }
+
+        .btn-admin {
+            background: var(--campus-blue);
+            color: white;
+        }
+
+        .btn-admin:hover {
+            background: transparent;
+            border-color: var(--campus-blue);
+            transform: translateY(-3px);
+            box-shadow: 0 10px 20px rgba(21, 101, 192, 0.3);
+        }
+
+        /* Welcome Message */
+        .welcome-section {
+            text-align: center;
+            margin-top: 60px;
+            padding: 30px;
+            background: rgba(0, 0, 0, 0.5);
+            border-radius: 20px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            max-width: 800px;
+            animation: fadeIn 1s ease-out 0.6s both;
+        }
+
+        .welcome-section h2 {
+            color: var(--campus-gold);
+            margin-bottom: 20px;
+            font-size: 2rem;
+        }
+
+        .welcome-section p {
+            color: rgba(255, 255, 255, 0.9);
+            line-height: 1.8;
+            margin-bottom: 15px;
+        }
+
+        .features {
+            display: flex;
+            justify-content: center;
+            gap: 30px;
+            margin-top: 30px;
+            flex-wrap: wrap;
+        }
+
+        .feature-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 15px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 10px;
+            min-width: 200px;
+        }
+
+        .feature-item i {
+            color: var(--campus-gold);
+            font-size: 1.5rem;
+        }
+
+        .feature-item span {
+            color: white;
+            font-weight: 500;
+        }
+
+        /* Footer */
+        .footer {
+            text-align: center;
+            margin-top: 60px;
+            padding-top: 30px;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            color: rgba(255, 255, 255, 0.6);
+            font-size: 0.9rem;
+            animation: fadeIn 1s ease-out 0.9s both;
+        }
+
+        .admin-note {
+            background: rgba(255, 215, 0, 0.1);
+            border: 1px solid rgba(255, 215, 0, 0.2);
+            padding: 10px 20px;
+            border-radius: 10px;
+            margin-top: 20px;
+            display: inline-block;
+            font-size: 0.85rem;
+        }
+
+        /* Animations */
+        @keyframes fadeInDown {
+            from {
+                opacity: 0;
+                transform: translateY(-30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+            }
+            to {
+                opacity: 1;
+            }
+        }
+
+        /* Pulse animation for cards */
+        @keyframes pulse {
+            0% {
+                box-shadow: 0 0 0 0 rgba(46, 125, 50, 0.4);
+            }
+            70% {
+                box-shadow: 0 0 0 10px rgba(46, 125, 50, 0);
+            }
+            100% {
+                box-shadow: 0 0 0 0 rgba(46, 125, 50, 0);
+            }
+        }
+
+        .user-card {
+            animation: pulse 2s infinite;
+        }
+
+        /* Responsive design */
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 2.5rem;
+            }
+            
+            .cards-container {
+                flex-direction: column;
+                align-items: center;
+            }
+            
+            .card {
+                width: 100%;
+                max-width: 350px;
+            }
+            
+            .welcome-section {
+                margin: 40px 20px;
+                padding: 20px;
+            }
+            
+            .features {
+                flex-direction: column;
+                align-items: center;
+            }
+            
+            .feature-item {
+                width: 100%;
+                max-width: 300px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .header h1 {
+                font-size: 2rem;
+            }
+            
+            .buttons {
+                flex-direction: column;
+            }
+            
+            .btn {
+                width: 100%;
+            }
+            
+            .admin-btn {
+                font-size: 0.8rem;
+                padding: 6px 12px;
+            }
+            
+            .card {
+                padding: 30px 20px;
+            }
+            
+            .welcome-section h2 {
+                font-size: 1.5rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Animated campus elements -->
+    <div class="campus-element gate"><i class="fas fa-monument"></i></div>
+    <div class="campus-element building"><i class="fas fa-university"></i></div>
+    <div class="campus-element tree"><i class="fas fa-tree"></i></div>
+    <div class="campus-element bell"><i class="fas fa-bell"></i></div>
+    
+    <!-- Small Admin Login Button -->
+    <div class="admin-btn-container">
+        <a href="{{ url_for('admin_login') }}" class="admin-btn">
+            <i class="fas fa-user-shield"></i>
+            <span>Admin Login</span>
+        </a>
+    </div>
+    
+    <div class="main-container">
+        <div class="header">
+            <div class="campus-badge">
+                <i class="fas fa-university"></i>
+                <span>Campus Lost & Found System</span>
+            </div>
+            <h1>Welcome to CampusTrack Intelligent Lost and Found Locator</h1>
+            <p>Your trusted platform for recovering lost items within our campus community. Whether you've lost something valuable or found an item, we're here to help reunite belongings with their owners.</p>
+            <p class="tagline">"Connecting lost items with their rightful owners"</p>
+        </div>
+        
+        <div class="cards-container">
+            <!-- User Card -->
+            <div class="card user-card">
+                <div class="card-icon">
+                    <i class="fas fa-user-graduate"></i>
+                </div>
+                <h2>For Students & Staff</h2>
+                <p>Report lost items, claim found items, and connect with fellow campus members through our secure portal.</p>
+                <div class="buttons">
+                    <a href="{{ url_for('user_signup') }}" class="btn btn-primary">Get Started</a>
+                    <a href="{{ url_for('user_login') }}" class="btn btn-secondary">Sign In</a>
+                </div>
+            </div>
+            
+            <!-- Admin Card -->
+            <div class="card admin-card">
+                <div class="card-icon">
+                    <i class="fas fa-user-shield"></i>
+                </div>
+                <h2>Campus Administration</h2>
+                <p>Manage the CampusTrack Intelligent Lost and Found Locator, verify claims, and oversee campus recovery operations.</p>
+                <div class="buttons">
+                    <a href="{{ url_for('admin_login') }}" class="btn btn-admin">Administrator Login</a>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Welcome Message Section -->
+        <div class="welcome-section">
+            <h2>How It Works</h2>
+            <p>Our system is designed to make it easy for the university community to report and recover lost items. Simply create an account, post your lost or found items, and let our platform do the work of connecting people.</p>
+            
+            <div class="features">
+                <div class="feature-item">
+                    <i class="fas fa-search"></i>
+                    <span>Search for Lost Items</span>
+                </div>
+                <div class="feature-item">
+                    <i class="fas fa-bullhorn"></i>
+                    <span>Report Found Items</span>
+                </div>
+                <div class="feature-item">
+                    <i class="fas fa-comments"></i>
+                    <span>Secure Messaging</span>
+                </div>
+                <div class="feature-item">
+                    <i class="fas fa-shield-alt"></i>
+                    <span>Verified Claims</span>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Footer -->
+        <div class="footer">
+            <p>© 2024 CampusTrack Intelligent Lost and Found Locator | Protecting Campus Community Assets</p>
+            
+        </div>
+    </div>
+    
+    <script>
+        // Add hover effect to cards
+        document.addEventListener('DOMContentLoaded', function() {
+            const cards = document.querySelectorAll('.card');
+            cards.forEach(card => {
+                card.addEventListener('mouseenter', () => {
+                    card.style.zIndex = '10';
+                });
+                
+                card.addEventListener('mouseleave', () => {
+                    card.style.zIndex = '1';
+                });
+            });
+        });
+        
+        // Parallax effect for background
+        window.addEventListener('scroll', function() {
+            const scrolled = window.pageYOffset;
+            const background = document.querySelector('body');
+            background.style.backgroundPosition = `center ${scrolled * 0.5}px`;
+            
+            // Move campus elements slightly
+            const elements = document.querySelectorAll('.campus-element');
+            elements.forEach(element => {
+                const speed = element.classList.contains('gate') ? 0.3 : 
+                              element.classList.contains('building') ? 0.5 : 
+                              element.classList.contains('tree') ? 0.4 : 0.2;
+                element.style.transform = `translateY(${scrolled * speed}px) rotate(${scrolled * 0.01}deg)`;
+            });
+        });
+    </script>
+</body>
+</html>

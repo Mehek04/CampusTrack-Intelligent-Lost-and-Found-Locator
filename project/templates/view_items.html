@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>View Items</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <div class="dashboard-container">
+        <div class="sidebar">
+            <h3>User Panel</h3>
+            <div class="user-info">
+                <p>Welcome, <strong>{{ session.username }}</strong></p>
+            </div>
+            <nav>
+                <a href="{{ url_for('user_dashboard') }}">Dashboard</a>
+                <a href="{{ url_for('add_found_item') }}">Add Found Item</a>
+                <a href="{{ url_for('add_lost_item') }}">Add Lost Item</a>
+                <a href="{{ url_for('view_items') }}" class="active">View Items</a>
+                <a href="{{ url_for('user_logout') }}" class="logout">Logout</a>
+            </nav>
+        </div>
+        
+        <div class="main-content">
+            <header>
+                <h1>Browse Items</h1>
+                <p>View found and lost items from other users</p>
+            </header>
+            
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    {% for category, message in messages %}
+                        <div class="alert alert-{{ category }}">{{ message }}</div>
+                    {% endfor %}
+                {% endif %}
+            {% endwith %}
+            
+            <!-- Found Items Section -->
+            <div class="dashboard-section">
+                <h2>Found Items</h2>
+                {% if found_items %}
+                <div class="items-grid">
+                    {% for item in found_items %}
+                    <div class="item-card">
+                        {% if item.image %}
+                        <div class="item-image">
+                            <img src="{{ url_for('static', filename='uploads/' + item.image) }}" 
+                                 alt="{{ item.device_name }}">
+                        </div>
+                        {% endif %}
+                        <div class="item-details">
+                            <h3>{{ item.device_name }}</h3>
+                            <p><strong>Color:</strong> {{ item.color }}</p>
+                            <p><strong>Location:</strong> {{ item.location }}</p>
+                            <p><strong>Found by:</strong> {{ item.posted_by }}</p>
+                            <p><strong>Date:</strong> {{ item.posted_date }}</p>
+                            <p>{{ item.description|truncate(100) }}</p>
+                            
+                            <div class="item-actions">
+                                <a href="{{ url_for('claim_item', item_id=item.id) }}" 
+                                   class="btn btn-primary">Claim This Item</a>
+                                <a href="{{ url_for('send_message_from_item', item_type='found', item_id=item.id, recipient=item.posted_by) }}" 
+                                   class="btn btn-secondary">Message Owner</a>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <div class="empty-state">
+                    <p>No found items available at the moment.</p>
+                </div>
+                {% endif %}
+            </div>
+            
+            <!-- Lost Items Section -->
+            <div class="dashboard-section">
+                <h2>Lost Items</h2>
+                {% if lost_items %}
+                <div class="items-grid">
+                    {% for item in lost_items %}
+                    <div class="item-card">
+                        {% if item.image %}
+                        <div class="item-image">
+                            <img src="{{ url_for('static', filename='uploads/' + item.image) }}" 
+                                 alt="{{ item.device_name }}">
+                        </div>
+                        {% endif %}
+                        <div class="item-details">
+                            <h3>{{ item.device_name }}</h3>
+                            <p><strong>Color:</strong> {{ item.color }}</p>
+                            <p><strong>Location:</strong> {{ item.location }}</p>
+                            <p><strong>Lost by:</strong> {{ item.posted_by }}</p>
+                            <p><strong>Date Lost:</strong> {{ item.lost_date if item.lost_date else item.posted_date }}</p>
+                            <p>{{ item.description|truncate(100) }}</p>
+                            
+                            <div class="item-actions">
+                                <a href="{{ url_for('send_message_from_item', item_type='lost', item_id=item.id, recipient=item.posted_by) }}" 
+                                   class="btn btn-secondary">Message Owner</a>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <div class="empty-state">
+                    <p>No lost items available at the moment.</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</body>
+</html>

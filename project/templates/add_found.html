@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Add Found Item</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <div class="dashboard-container">
+        <div class="sidebar">
+            <h3>User Panel</h3>
+            <div class="user-info">
+                <p>Welcome, <strong>{{ session.username }}</strong></p>
+            </div>
+            <nav>
+                <a href="{{ url_for('user_dashboard') }}">Dashboard</a>
+                <a href="{{ url_for('add_found_item') }}" class="active">Add Found Item</a>
+                <a href="{{ url_for('add_lost_item') }}">Add Lost Item</a>
+                <a href="{{ url_for('view_items') }}">View Items</a>
+                <a href="{{ url_for('user_logout') }}" class="logout">Logout</a>
+            </nav>
+        </div>
+        
+        <div class="main-content">
+            <header>
+                <h1>Add Found Item</h1>
+                <p>Enter details of the device you found</p>
+            </header>
+            
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    {% for category, message in messages %}
+                        <div class="alert alert-{{ category }}">{{ message }}</div>
+                    {% endfor %}
+                {% endif %}
+            {% endwith %}
+            
+            <div class="card">
+                <form method="POST" action="{{ url_for('add_found_item') }}" enctype="multipart/form-data">
+                    <div class="form-group">
+                        <label for="device_name">Device Name/Type:</label>
+                        <input type="text" id="device_name" name="device_name" required 
+                               placeholder="e.g., iPhone 13, Samsung Wallet, HP Laptop">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="description">Description:</label>
+                        <textarea id="description" name="description" rows="3" required 
+                                  placeholder="Describe the device, any identifying marks, condition, etc."></textarea>
+                    </div>
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="color">Color:</label>
+                            <input type="text" id="color" name="color" 
+                                   placeholder="e.g., Black, Silver, Rose Gold">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="location">Found Location:</label>
+                            <input type="text" id="location" name="location" required 
+                                   placeholder="e.g., Library Building, Room 201, Park Street">
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="image">Device Image (Optional):</label>
+                        <input type="file" id="image" name="image" accept="image/*">
+                        <small>Max file size: 5MB. Allowed formats: JPG, PNG, GIF</small>
+                    </div>
+                    
+                    <div class="form-actions">
+                        <button type="submit" class="btn btn-primary">Post Found Item</button>
+                        <a href="{{ url_for('user_dashboard') }}" class="btn btn-secondary">Cancel</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

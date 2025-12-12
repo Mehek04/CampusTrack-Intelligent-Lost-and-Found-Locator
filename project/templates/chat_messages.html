@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Messages</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <div class="dashboard-container">
+        <div class="sidebar">
+            <h3>User Panel</h3>
+            <div class="user-info">
+                <p>Welcome, <strong>{{ session.username }}</strong></p>
+            </div>
+            <nav>
+                <a href="{{ url_for('user_dashboard') }}">Dashboard</a>
+                <a href="{{ url_for('chat_messages') }}" class="active">Messages</a>
+                <a href="{{ url_for('add_found_item') }}">Add Found Item</a>
+                <a href="{{ url_for('add_lost_item') }}">Add Lost Item</a>
+                <a href="{{ url_for('view_items') }}">View Items</a>
+                <a href="{{ url_for('user_logout') }}" class="logout">Logout</a>
+            </nav>
+        </div>
+        
+        <div class="main-content">
+            <header>
+                <h1>Messages</h1>
+                <p>Communicate with other users about items</p>
+            </header>
+            
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    {% for category, message in messages %}
+                        <div class="alert alert-{{ category }}">{{ message }}</div>
+                    {% endfor %}
+                {% endif %}
+            {% endwith %}
+            
+            <div class="chat-container">
+                <!-- Conversations List -->
+                <div class="conversations-sidebar">
+                    <h3>Conversations</h3>
+                    <div class="conversation-list">
+                        {% if conversations %}
+                            {% for conversation in conversations %}
+                            <a href="{{ url_for('chat_messages', with_user=conversation.other_user) }}" 
+                               class="conversation-item {% if conversation.other_user == current_chat_user %}active{% endif %}">
+                                <div class="conversation-header">
+                                    <strong>{{ conversation.other_user }}</strong>
+                                    <small>{{ conversation.last_message_time }}</small>
+                                </div>
+                                <p class="last-message">{{ conversation.last_message|truncate(30) }}</p>
+                            </a>
+                            {% endfor %}
+                        {% else %}
+                            <div class="empty-state">
+                                <p>No conversations yet</p>
+                                <p style="font-size: 12px; margin-top: 10px;">
+                                    You'll see conversations here when:<br>
+                                    • Someone claims your found item<br>
+                                    • You claim someone's found item<br>
+                                    • You message an item owner<br>
+                                    • Someone messages you about your items
+                                </p>
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+                
+                <!-- Chat Area -->
+                <div class="chat-main">
+                    {% if current_chat_user %}
+                    <div class="chat-header">
+                        <h3>Chat with <strong>{{ current_chat_user }}</strong></h3>
+                        {% if related_item %}
+                        <p>About: <strong>{{ related_item.device_name }}</strong> ({{ related_item_type|title }})</p>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="chat-messages" id="chatMessages">
+                        {% if chat_messages %}
+                            {% for message in chat_messages %}
+                            <div class="message {% if message.sender == session.username %}sent{% else %}received{% endif %}">
+                                <div class="message-content">
+                                    {% if message.get('from_admin') %}
+                                    <div style="font-size: 12px; color: #ff6b6b; margin-bottom: 5px;">
+                                        <i class="fas fa-shield-alt"></i> Message from Admin
+                                    </div>
+                                    {% endif %}
+                                    {% if message.get('subject') %}
+                                    <div style="font-weight: bold; margin-bottom: 5px;">{{ message.subject }}</div>
+                                    {% endif %}
+                                    <p>{{ message.message }}</p>
+                                    <span class="message-time">{{ message.timestamp }}</span>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        {% else %}
+                            <div class="empty-chat">
+                                <p>No messages yet. Start the conversation!</p>
+                                {% if related_item %}
+                                <p style="margin-top: 10px; font-size: 14px;">
+                                    You're discussing: <strong>{{ related_item.device_name }}</strong><br>
+                                    {% if related_item_type == 'found' %}
+                                    This is a found item posted by {{ related_item.posted_by }}
+                                    {% else %}
+                                    This is a lost item posted by {{ related_item.posted_by }}
+                                    {% endif %}
+                                </p>
+                                {% endif %}
+                            </div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="chat-input">
+                        <form method="POST" action="{{ url_for('send_message') }}">
+                            <input type="hidden" name="recipient" value="{{ current_chat_user }}">
+                            {% if related_item_id %}
+                            <input type="hidden" name="item_id" value="{{ related_item_id }}">
+                            <input type="hidden" name="item_type" value="{{ related_item_type }}">
+                            {% endif %}
+                            <div class="message-input-group">
+                                <textarea name="message" placeholder="Type your message here..." required rows="3"></textarea>
+                                <button type="submit" class="btn btn-primary">Send</button>
+                            </div>
+                        </form>
+                    </div>
+                    {% else %}
+                    <div class="select-conversation">
+                        <div class="welcome-message">
+                            <h3>Welcome to Messages</h3>
+                            <p>Your conversations will appear here when you:</p>
+                            <ul>
+                                <li>Claim a found item (you'll automatically message the owner)</li>
+                                <li>Have your found item claimed by someone</li>
+                                <li>Click "Message Owner" on any item</li>
+                                <li>Receive a system notification about claim status</li>
+                            </ul>
+                            <div class="quick-links">
+                                <p>To start a conversation:</p>
+                                <a href="{{ url_for('view_items') }}" class="btn btn-primary">Browse Found Items</a>
+                                <a href="{{ url_for('view_items') }}" class="btn btn-secondary">Browse Lost Items</a>
+                            </div>
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // Auto scroll to bottom of chat
+        window.onload = function() {
+            var chatContainer = document.getElementById('chatMessages');
+            if (chatContainer) {
+                chatContainer.scrollTop = chatContainer.scrollHeight;
+            }
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Claim Details</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <div class="dashboard-container">
+        <div class="sidebar">
+            <h3>User Panel</h3>
+            <div class="user-info">
+                <p>Welcome, <strong>{{ session.username }}</strong></p>
+            </div>
+            <nav>
+                <a href="{{ url_for('user_dashboard') }}">Dashboard</a>
+                <a href="{{ url_for('add_found_item') }}">Add Found Item</a>
+                <a href="{{ url_for('add_lost_item') }}">Add Lost Item</a>
+                <a href="{{ url_for('view_items') }}">View Items</a>
+                <a href="{{ url_for('user_logout') }}" class="logout">Logout</a>
+            </nav>
+        </div>
+        
+        <div class="main-content">
+            <div class="claim-details-container">
+                <div class="claim-header">
+                    <h1>Claim Details 
+                        <span class="status-badge status-{{ claim.status }}">
+                            {{ claim.status|title }}
+                        </span>
+                    </h1>
+                    <p>Claim ID: {{ claim.id }} | Submitted: 
+    {% if claim.claim_date %}
+        {% if claim.claim_date is string %}
+            {{ claim.claim_date }}
+        {% else %}
+            {{ claim.claim_date.strftime('%Y-%m-%d %H:%M:%S') }}
+        {% endif %}
+    {% else %}N/A{% endif %}
+</p>
+                </div>
+                
+                {% with messages = get_flashed_messages(with_categories=true) %}
+                    {% if messages %}
+                        {% for category, message in messages %}
+                            <div class="alert alert-{{ category }}">{{ message }}</div>
+                        {% endfor %}
+                    {% endif %}
+                {% endwith %}
+                
+                <div class="detail-grid">
+                    <!-- Claimant Information -->
+                    <div class="detail-section">
+                        <h3>Claimant Information</h3>
+                        <div class="detail-item">
+                            <span class="detail-label">Claimant Username:</span>
+                            <div class="detail-value">{{ claim.claimant_username }}</div>
+                        </div>
+                        <div class="detail-item">
+                            <span class="detail-label">Phone Number:</span>
+                            <div class="detail-value">{{ claim.phone_number }}</div>
+                        </div>
+                        <div class="detail-item">
+                            <span class="detail-label">Contact Method:</span>
+                            <div class="detail-value">{{ claim.contact_method|title }}</div>
+                        </div>
+                    </div>
+                    
+                    <!-- Device Information -->
+                    <div class="detail-section">
+                        <h3>Device Information</h3>
+                        <div class="detail-item">
+                            <span class="detail-label">Device Name:</span>
+                            <div class="detail-value">{{ found_item.device_name if found_item else 'N/A' }}</div>
+                        </div>
+                        <div class="detail-item">
+                            <span class="detail-label">Found Location:</span>
+                            <div class="detail-value">{{ found_item.location if found_item else 'N/A' }}</div>
+                        </div>
+                        <div class="detail-item">
+                            <span class="detail-label">Device Color:</span>
+                            <div class="detail-value">{{ found_item.color if found_item else 'N/A' }}</div>
+                        </div>
+                    </div>
+                    
+                    <!-- Address & Proof -->
+                    <div class="detail-section">
+                        <h3>Address Details</h3>
+                        <div class="detail-item">
+                            <span class="detail-label">Full Address:</span>
+                            <div class="detail-value">{{ claim.address }}</div>
+                        </div>
+                    </div>
+                    
+                    <div class="detail-section">
+                        <h3>Proof of Ownership</h3>
+                        <div class="detail-item">
+                            <span class="detail-label">Proof Description:</span>
+                            <div class="detail-value">{{ claim.proof_description }}</div>
+                        </div>
+                        
+                        {% if claim.proof_image %}
+                        <div class="detail-item">
+                            <span class="detail-label">Proof Image:</span>
+                            <div class="detail-value">
+                                <img src="{{ url_for('static', filename='uploads/' + claim.proof_image) }}" 
+                                     alt="Proof Image" class="proof-image">
+                            </div>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+                
+                <!-- Action Buttons -->
+                {% if claim.status == 'pending' %}
+                <div class="action-buttons">
+                    <a href="{{ url_for('manage_claim', claim_id=claim.id, action='approve') }}" 
+                       class="btn btn-success">✅ Approve Claim</a>
+                    <a href="{{ url_for('manage_claim', claim_id=claim.id, action='reject') }}" 
+                       class="btn btn-error">❌ Reject Claim</a>
+                    <a href="{{ url_for('user_dashboard') }}" class="btn btn-secondary">Back to Dashboard</a>
+                </div>
+                {% else %}
+                <div class="action-buttons">
+                    <a href="{{ url_for('user_dashboard') }}" class="btn btn-primary">Back to Dashboard</a>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</body>
+</html>
