@@ -16,6 +16,6 @@ Clone the repo → install dependencies → import the MySQL database → run `a
 Designed for campuses to streamline lost & found management, improve transparency, and save time for students and administrators.
 
 👩‍💻 **Author:**  
-Mehek — Computer Science Graduate  
+Mehek — Computer Science Student  
 
 ⭐ Star the repo if you find it useful!
