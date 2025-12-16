@@ -1,23 +1,21 @@
-open xampp -> start apache and mysql server
-make sure no database exist in name of "campus_lost_found"
-if exits then delete that database
+# 🎒 CampusTrack – Intelligent Lost & Found System
 
+CampusTrack is a web-based Lost and Found Management System that helps students and staff report, search, and recover lost items on campus efficiently. 
+It digitizes the entire process, reducing manual effort and improving recovery speed through a centralized platform.
 
-in terminal execute below commands
+✨ **Features:**  
+📝 Report lost items with images | 📦 Register found items | 🔍 Search & match items | 🗄️ Secure database storage | 📄 PDF report generation  
 
-cd project
-python -m venv venv
-venv/scripts/activate
-pip install -r requirements.txt
-python setup_database.py
-python app.py
+🛠️ **Tech Stack:**  
+Python (Flask), HTML, CSS, MySQL, SQL  
 
+⚙️ **How to Run:**  
+Clone the repo → install dependencies → import the MySQL database → run `app.py` → open `http://localhost:5000`
 
+🎯 **Use Case:**  
+Designed for campuses to streamline lost & found management, improve transparency, and save time for students and administrators.
 
-after first time setup then to use project use below commands
+👩‍💻 **Author:**  
+Mehek — Computer Science Graduate  
 
-cd project
-venv/scripts/activate
-python app.py
-
-
+⭐ Star the repo if you find it useful!
